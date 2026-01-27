@@ -1,0 +1,39 @@
+name: delete empty tags
+on:
+  workflow_dispatch: # Allows manual trigger
+  schedule:
+    - cron: '30 5 * * *' # Runs daily at 5:30am
+
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-slim
+    permissions:
+      contents: write # Required to delete tags
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Fetches all tags
+          token: ${{ secrets.REPO_SECRET }}
+
+      - name: Delete tags without releases
+        run: |
+          # 1. Get all remote tags
+          all_tags=$(git ls-remote --tags origin | awk -F/ '{print $3}' | grep -v "\^{}")
+
+          # 2. Get all tags associated with a release
+          released_tags=$(gh release list --limit 1000 --json tagName --jq '.[].tagName')
+
+          # 3. Loop through tags and delete those not in the release list
+          for tag in $all_tags; do
+            if ! echo "$released_tags" | grep -qxw "$tag"; then
+              echo "Deleting unattached tag: $tag"
+              git push origin --delete "$tag"
+            else
+              echo "Keeping tag with release: $tag"
+            fi
+          done
