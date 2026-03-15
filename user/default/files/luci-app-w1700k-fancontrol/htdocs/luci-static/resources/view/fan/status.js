@@ -125,9 +125,7 @@ return view.extend({
 						E('h4', { 'style': 'margin: 0 0 10px 0; color: #666;' }, _('System')),
 						E('div', { 'class': 'cbi-section-node' }, [
 							createTempGauge(_('CPU'), status.temp_cpu || 0, 'temp-cpu'),
-							createTempGauge(_('Board (Fan Curve)'), status.temp_board || 0, 'temp-board'),
-							createTempGauge(_('10G PHY'), status.temp_phy1 || 0, 'temp-phy1'),
-							createTempGauge(_('Switch PHY'), status.temp_phy2 || 0, 'temp-phy2')
+							createTempGauge(_('Board (Fan Curve)'), status.temp_board || 0, 'temp-board')
 						])
 					]),
 					// WiFi Temperatures
