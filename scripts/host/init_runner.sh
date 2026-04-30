@@ -3,7 +3,7 @@
 
 setup_envs() {
   # Do not change
-  BUILDER_IMAGE_ID_BUILDENV="openwrtfanboy/openwrt_builder_arm:latest"
+  BUILDER_IMAGE_ID_BUILDENV="openwrtfanboy/openwrt_builder_arm:debian"
   BUILDER_CONTAINER_ID="builder"
   BUILDER_WORK_DIR="/home/builder"
   BUILDER_TMP_DIR="/tmp/builder"
@@ -81,7 +81,7 @@ prepare_target() {
   fi
   rsync -aI "${HOST_WORK_DIR}/user/${BUILD_TARGET}/" "${HOST_WORK_DIR}/user/current/"
   # Creating cvn.config
-  echo CONFIG_VERSION_NUMBER=${BUILD_TARGET}-26.03rc1 > "${HOST_WORK_DIR}/user/current/cvn.config"
+  echo CONFIG_VERSION_NUMBER=${BUILD_TARGET} > "${HOST_WORK_DIR}/user/current/cvn.config"
   echo "Merged target profile structure:"
   tree "${HOST_WORK_DIR}/user/current"
 

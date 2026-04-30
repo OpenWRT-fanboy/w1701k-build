@@ -47,6 +47,7 @@ fi
 
 (
   cd "${OPENWRT_CUR_DIR}"
+  rm -rf feeds/* 2> /dev/null
   ./scripts/feeds update -a
   ./scripts/feeds install -a
 )
