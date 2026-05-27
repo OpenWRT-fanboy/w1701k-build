@@ -39,16 +39,6 @@ setup_envs() {
   _set_env DK_EXEC_ENVS
 }
 
-check_test() {
-  # Prepare for test
-  if [ "x${BUILD_MODE}" = "xtest" ]; then
-    TEST=1
-    _set_env TEST
-    append_docker_exec_env TEST
-    _set_env DK_EXEC_ENVS
-  fi
-}
-
 load_task() {
   # Load building action
   if [ "x${GITHUB_EVENT_NAME}" = "xpush" ]; then
@@ -152,7 +142,6 @@ main() {
   fi
 
   setup_envs
-  check_test
   load_task
   prepare_target
   load_options

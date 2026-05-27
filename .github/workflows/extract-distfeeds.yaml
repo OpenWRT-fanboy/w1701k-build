@@ -15,8 +15,8 @@ jobs:
     steps:
       - name: Install binwalk
         run: |
-          sudo apt update
-          sudo apt install -y binwalk
+          sudo apt-get update -qq
+          sudo apt-get install -y binwalk
       - name: Download and extract
         run: |
           curl https://downloads.openwrt.org/snapshots/targets/airoha/an7581/openwrt-airoha-an7581-airoha_an7581-evb-squashfs-sysupgrade.bin --output sysupgrade.bin

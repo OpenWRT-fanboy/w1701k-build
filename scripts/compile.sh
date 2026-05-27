@@ -10,15 +10,6 @@ if [ -z "${OPENWRT_COMPILE_DIR}" ] || [ -z "${OPENWRT_CUR_DIR}" ] || [ -z "${OPE
   exit 1
 fi
 
-if [ "x${TEST}" = "x1" ]; then
-  mkdir -p "${OPENWRT_COMPILE_DIR}/bin/targets/x86/64/packages"
-  mkdir -p "${OPENWRT_COMPILE_DIR}/bin/packages"
-  echo "Dummy firmware" > "${OPENWRT_COMPILE_DIR}/bin/targets/x86/64/firmware.bin"
-  echo "Dummy packages" > "${OPENWRT_COMPILE_DIR}/bin/targets/x86/64/packages/packages.tar.gz"
-  echo "Dummy packages" > "${OPENWRT_COMPILE_DIR}/bin/packages/packages.tar.gz"
-  exit 0
-fi
-
 compile() {
   (
     cd "${OPENWRT_CUR_DIR}"

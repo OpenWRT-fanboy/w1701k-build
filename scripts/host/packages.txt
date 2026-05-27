@@ -17,3 +17,4 @@ unzip
 zlib1g-dev
 file
 wget
+ccache

@@ -7,22 +7,6 @@
 # Author: Texot
 #=================================================
 
-# # helper functions
-# _exit_if_empty() {
-#   local var_name=${1}
-#   local var_value=${2}
-#   if [ -z "$var_value" ]; then
-#     echo "Missing input $var_name" >&2
-#     exit 1
-#   fi
-# }
-
-# # action steps
-# check_required_input() {
-#   _exit_if_empty DK_USERNAME "${DK_USERNAME}"
-#   _exit_if_empty DK_PASSWORD "${DK_PASSWORD}"
-# }
-
 configure_docker() {
   echo '{
     "max-concurrent-downloads": 50,
@@ -52,38 +36,6 @@ pull_image() {
   else
     echo "No argument for pulling" >&2
     exit 1
-  fi
-}
-
-squash_image_when_necessary() {
-  if [ $# -ne 1 ]; then
-    printf "Wrong parameters!\nUsage: squash_image_when_necessary IMAGE" >&2
-    exit 1
-  fi
-  local SQUASH_IMAGE="${1}"
-
-  local layer_number
-  layer_number="$(docker image inspect -f '{{.RootFS.Layers}}' "${SQUASH_IMAGE}" | grep -o 'sha256:' | wc -l)"
-  DK_LAYER_NUMBER_LIMIT=${DK_LAYER_NUMBER_LIMIT:-50}
-  echo "Number of docker layers: ${layer_number}"
-  if (( layer_number > DK_LAYER_NUMBER_LIMIT )); then
-    echo "The number of docker layers has exceeded the limitation ${DK_LAYER_NUMBER_LIMIT}, squashing... (This may take some time)"
-    # Use buildkit to squash since it squashes all layers together instead of just current Dockerfile
-    # Though it is probably a bug not a feature: https://github.com/moby/moby/issues/38903
-    # This is faster and reliable than tools like 'docker-squash'
-    echo "Current docker system df:"
-    docker system df
-    echo "Current docker images:"
-    docker image ls -a
-
-    echo "FROM \"${SQUASH_IMAGE}\"" | DOCKER_BUILDKIT=1 docker build --squash "--tag=${SQUASH_IMAGE}" --file=- .
-    echo "Squashing finished! Cleaning up dangling images ..."
-    docker system prune -f
-
-    echo "Current docker system df:"
-    docker system df
-    echo "Current docker images:"
-    docker image ls -a
   fi
 }
 

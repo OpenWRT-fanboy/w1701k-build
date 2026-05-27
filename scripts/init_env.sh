@@ -17,13 +17,11 @@ fi
 
 _set_env OPENWRT_CUR_DIR
 
-[ "x${TEST}" != "x1" ] || exit 0
-
 # Install missing packages in current env from a remote list
-sudo -E apt -qq update
+sudo -E apt-get -qq update
 if [ ! -x "$(command -v curl)" ]; then
     echo "curl not found, installing..."
-    sudo -E apt -qq install curl
+    sudo -E apt-get -qq install curl
 fi
 packages_file="${BUILDER_TMP_DIR}/packages.txt"
 packages_url="https://github.com/OpenWRT-fanboy/w1701k-build/raw/refs/heads/main/scripts/host/packages.txt"
@@ -43,7 +41,7 @@ packages_url="https://github.com/OpenWRT-fanboy/w1701k-build/raw/refs/heads/main
 if [ -f "${packages_file}" ]; then
   echo "Installing missing packages"
   mapfile -t all_packages < <(grep -vE -e "^\s*#" -e "^\s*\$" "${packages_file}")
-  sudo -E apt -qq install --no-upgrade "${all_packages[@]}"
+  sudo -E apt-get -qq install --no-upgrade "${all_packages[@]}"
   echo "Installed packages: ${all_packages[*]}"
   rm -f "${packages_file}"
 fi
