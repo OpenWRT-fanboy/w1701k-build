@@ -5,11 +5,11 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 env:
-  DK_USERNAME: ${{secrets.DOCKER_USERNAME}}
-  DK_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
   GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  GITHUB_ACTOR: ${{github.actor}}
   CCACHE_DIR: ${{github.workspace}}/ghcache
   CCACHE_MAXSIZE: 2G
 
@@ -47,28 +47,26 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{github.workspace}}/ghcache
-        key: ccache-openwrt-${{matrix.target}}-${{github.run_id}}
+        key: ccache-${{matrix.target}}.${{github.run_id}}
         restore-keys: |
-          ccache-openwrt-${{matrix.target}}-
-          ccache-openwrt-
+          ccache-${{matrix.target}}.
+          ccache-
 
     - name: Download artifact
-      uses: dawidd6/action-download-artifact@v18
+      uses: dawidd6/action-download-artifact@v21
       with:
         workflow: extract-distfeeds.yaml
         skip_unpack: true
 
     - name: Prepare artifact
       run: |
-        mv distfeeds.list.zip distfeeds.list
-        mkdir -p ./user/default/files/etc/apk/repositories.d
-        cp distfeeds.list ./user/default/files/etc/apk/repositories.d/
-        sed -n 's/.*6.18.*-*-\([^/]*\).*/\1/p' distfeeds.list > ./user/default/files/etc/vermagic.txt
+        install -D distfeeds.list.zip ./user/default/files/etc/apk/repositories.d/distfeeds.list
+        sed -n 's/.*6.18.*-*-\([^/]*\).*/\1/p' distfeeds.list.zip > ./user/default/files/etc/vermagic.txt
 
     - name: Initialize build environment
       run: |
         set -eo pipefail
-        source scripts/host/docker.sh
+        source scripts/host/ghcr.sh
         source scripts/lib/gaction.sh
 
         "${HOST_WORK_DIR}/scripts/host/init_runner.sh" main build
@@ -81,8 +79,8 @@ jobs:
     - name: Check and prepare builders
       run: |
         set -eo pipefail
-        source "${HOST_WORK_DIR}/scripts/host/docker.sh"
-        source "${HOST_WORK_DIR}/scripts/lib/gaction.sh"
+        source scripts/host/ghcr.sh
+        source scripts/lib/gaction.sh
 
         if [ "x${OPT_REBUILD}" != "x1" ]; then
           set +eo pipefail
@@ -113,7 +111,7 @@ jobs:
     - name: Get or create builder container
       run: |
         set -eo pipefail
-        source "${HOST_WORK_DIR}/scripts/host/docker.sh"
+        source scripts/host/ghcr.sh
 
         # Ensure ccache directory exists
         mkdir -p "${CCACHE_DIR}"
@@ -133,7 +131,7 @@ jobs:
     - name: Prepare OpenWrt source (clone, configure, download)
       run: |
         set -eo pipefail
-        source "${HOST_WORK_DIR}/scripts/host/docker.sh"
+        source scripts/host/ghcr.sh
 
         # Clone/update OpenWrt
         docker_exec "${BUILDER_CONTAINER_ID}" "${BUILDER_WORK_DIR}/scripts/update_repo.sh"
@@ -153,7 +151,7 @@ jobs:
       continue-on-error: true
       run: |
         set -eo pipefail
-        source "${HOST_WORK_DIR}/scripts/host/docker.sh"
+        source scripts/host/ghcr.sh
         echo "started=1" >> $GITHUB_OUTPUT
         docker_exec -e MODE=m "${BUILDER_CONTAINER_ID}" "${BUILDER_WORK_DIR}/scripts/compile.sh"
         echo "status=success" >> $GITHUB_OUTPUT
@@ -162,7 +160,7 @@ jobs:
       if: steps.compile.outputs.started == '1' && steps.compile.outputs.status != 'success'
       run: |
         set -eo pipefail
-        source "${HOST_WORK_DIR}/scripts/host/docker.sh"
+        source scripts/host/ghcr.sh
         docker_exec -e MODE=s "${BUILDER_CONTAINER_ID}" "${BUILDER_WORK_DIR}/scripts/compile.sh"
 
     - name: Organize files
@@ -200,7 +198,7 @@ jobs:
         )
       run: |
         set -eo pipefail
-        source "${HOST_WORK_DIR}/scripts/host/docker.sh"
+        source scripts/host/ghcr.sh
 
         docker_exec "${BUILDER_CONTAINER_ID}" "${BUILDER_WORK_DIR}/scripts/pre_commit.sh"
         docker commit -a "openwrtfanboy/openwrt-fastbuild" -m "Building at $(date)" "${BUILDER_CONTAINER_ID}" "${BUILDER_IMAGE_ID_INC}"

@@ -5,6 +5,7 @@
 # Description: FAST building OpenWrt with Github Actions and Docker!
 # Lisence: MIT
 # Author: Texot
+# Modified for GitHub Packages (ghcr.io)
 #=================================================
 
 configure_docker() {
@@ -17,7 +18,7 @@ configure_docker() {
 }
 
 login_to_registry() {
-  echo "${DK_PASSWORD}" | docker login -u "${DK_USERNAME}" --password-stdin "${DK_REGISTRY}"
+  echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
 }
 
 pull_image() {
@@ -28,7 +29,7 @@ pull_image() {
       docker pull "${IMAGE_TO_PULL}" 2> >(tee /tmp/dockerpull_stderr.log >&2)
       ret_val=$?
       if [ ${ret_val} -ne 0 ] && ( grep -q "max depth exceeded" /tmp/dockerpull_stderr.log ) ; then
-        echo "::error::Your image has exceeded maximum layer limit. Normally this should have already been automatically handled, but obviously haven't. You need to manually rebase or rebuild this builder, or delete it on the Docker Hub website." >&2
+        echo "::error::Your image has exceeded maximum layer limit. Normally this should have already been automatically handled, but obviously haven't. You need to manually rebase or rebuild this image."
         exit 1
       fi
       [ "x${STRICT_PULL}" != "x1" ] || exit $ret_val
@@ -59,8 +60,4 @@ append_docker_exec_env() {
 
 create_remote_tag_alias() {
   docker buildx imagetools create -t "${2}" "${1}"
-}
-
-logout_from_registry() {
-  docker logout "${DK_REGISTRY}"
 }
