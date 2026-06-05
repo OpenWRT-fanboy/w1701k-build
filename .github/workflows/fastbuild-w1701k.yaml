@@ -63,7 +63,7 @@ jobs:
         mv distfeeds.list.zip distfeeds.list
         mkdir -p ./user/default/files/etc/apk/repositories.d
         cp distfeeds.list ./user/default/files/etc/apk/repositories.d/
-        sed -n 's/.*6.12.*-*-\([^/]*\).*/\1/p' distfeeds.list > ./user/default/files/etc/vermagic.txt
+        sed -n 's/.*6.18.*-*-\([^/]*\).*/\1/p' distfeeds.list > ./user/default/files/etc/vermagic.txt
 
     - name: Initialize build environment
       run: |
