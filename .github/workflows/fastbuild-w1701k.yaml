@@ -16,7 +16,7 @@ env:
 jobs:
   build:
     name: ${{matrix.title}} ${{matrix.target}}
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     if: |
       github.event_name == 'push'
       || github.event_name == 'repository_dispatch'
@@ -39,7 +39,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
@@ -52,16 +52,10 @@ jobs:
           ccache-${{matrix.target}}.
           ccache-
 
-    - name: Download artifact
-      uses: dawidd6/action-download-artifact@v21
-      with:
-        workflow: extract-distfeeds.yaml
-        skip_unpack: true
-
     - name: Prepare artifact
       run: |
-        install -D distfeeds.list.zip ./user/default/files/etc/apk/repositories.d/distfeeds.list
-        sed -n 's/.*6.18.*-*-\([^/]*\).*/\1/p' distfeeds.list.zip > ./user/default/files/etc/vermagic.txt
+        curl -Z --create-dirs -Lo user/default/files/etc/apk/repositories.d/distfeeds.list https://w1700k.github.io/builds/distfeeds.list
+        curl -Z -Lo user/default/files/etc/vermagic.txt https://w1700k.github.io/builds/vermagic.txt
 
     - name: Initialize build environment
       run: |
