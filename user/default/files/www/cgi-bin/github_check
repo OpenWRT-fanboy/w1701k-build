@@ -9,7 +9,7 @@ printf 'Content-Type: application/json\n'
 printf 'Cache-Control: no-store\n'
 printf '\n'
 
-API_URL='https://api.github.com/repos/w1700k/builds/releases?per_page=100'
+API_URL='https://api.github.com/repos/OpenWRT-fanboy/w1701k-build/releases?per_page=100'
 CACHE_FILE='/tmp/github-releases.json'
 
 json_error() {
